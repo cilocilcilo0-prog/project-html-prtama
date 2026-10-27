@@ -1,0 +1,1966 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <title>SUARA SYIAR - Platform Sewa Penceramah, Pengajian & Hadroh</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .screen-in {
+      animation: slideUp 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-900 min-h-screen flex flex-col items-center justify-center p-0 sm:p-4 font-sans antialiased selection:bg-emerald-700 selection:text-white">
+
+  <!-- Desktop Mobile Frame Simulator (430px x 890px standard) -->
+  <div id="appContainer" class="w-full sm:max-w-[430px] h-screen sm:h-[900px] bg-slate-50 sm:rounded-[46px] shadow-[0_25px_70px_rgba(0,0,0,0.85)] sm:border-[10px] sm:border-slate-900 flex flex-col relative overflow-hidden">
+    
+    <!-- Status Bar / Dynamic Island Simulator -->
+    <div class="h-7 w-full bg-white flex items-center justify-between px-6 pt-1 select-none z-50 flex-none border-b border-slate-100">
+      <span class="text-xs font-bold text-slate-700" id="liveClock">09:41</span>
+      <div class="h-3.5 w-24 bg-slate-900 rounded-full mx-auto shadow-inner"></div>
+      <div class="flex items-center space-x-1.5 text-slate-700 text-xs font-bold">
+        <span>5G</span>
+        <div class="w-5 h-2.5 border border-slate-700 rounded-sm p-0.5 flex items-center">
+          <div class="h-full w-full bg-slate-800 rounded-2xs"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Application Top Bar -->
+    <header class="bg-white px-4 py-2.5 flex items-center justify-between border-b border-slate-200 select-none z-40 flex-none shadow-2xs">
+      <button onclick="toggleDrawer()" class="p-1.5 text-slate-700 hover:text-emerald-800 hover:bg-slate-100 rounded-xl transition" aria-label="Menu">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+
+      <div class="flex items-center space-x-1.5 cursor-pointer" onclick="goHome()">
+        <span class="text-lg">🕌</span>
+        <span class="text-base font-black tracking-tight text-emerald-950">SUARA <span class="text-emerald-700">SYIAR</span></span>
+      </div>
+
+      <!-- Quick Switch Role Pill -->
+      <button onclick="quickToggleRole()" id="roleBadgeBtn" class="text-xs font-bold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-950 border border-emerald-300 hover:bg-emerald-200 transition">
+        Mode Penyewa
+      </button>
+    </header>
+
+    <!-- Main Viewport Area -->
+    <main id="appViewport" class="flex-1 overflow-y-auto no-scrollbar relative bg-slate-50 flex flex-col">
+      <!-- Screen content rendered here -->
+    </main>
+
+    <!-- Bottom Navigation Bar -->
+    <nav id="bottomNavigationBar" class="bg-white border-t border-slate-200 px-4 py-2 flex items-center justify-around select-none z-40 flex-none shadow-lg">
+      <!-- Dynamically filled depending on Active Role -->
+    </nav>
+
+    <!-- Sidebar Drawer Overlay -->
+    <div id="drawerOverlay" class="hidden absolute inset-0 bg-slate-950/60 z-50 flex">
+      <div id="drawerContent" class="w-72 bg-white h-full shadow-2xl flex flex-col justify-between p-5 transform -translate-x-full transition-transform duration-300 ease-out">
+        <div>
+          <!-- Drawer User Header -->
+          <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+            <div class="flex items-center space-x-2.5">
+              <div id="drawerAvatar" class="w-10 h-10 rounded-full bg-emerald-700 text-white flex items-center justify-center font-bold text-sm shadow-sm">
+                SK
+              </div>
+              <div class="overflow-hidden">
+                <h4 id="drawerUserName" class="text-xs font-black text-slate-900 truncate">Surya Kencana</h4>
+                <p id="drawerUserEmail" class="text-xs text-slate-500 truncate">surya@suarasyiar.com</p>
+              </div>
+            </div>
+            <button onclick="toggleDrawer()" class="p-1 text-slate-400 hover:text-slate-700 font-bold">✕</button>
+          </div>
+
+          <!-- Drawer Links -->
+          <div class="mt-4 space-y-1" id="drawerLinksContainer"></div>
+        </div>
+
+        <!-- Drawer Footer -->
+        <div class="pt-4 border-t border-slate-100 space-y-2">
+          <button onclick="toggleRoleAndCloseDrawer()" class="w-full py-2.5 px-3 bg-emerald-50 hover:bg-emerald-100 text-emerald-950 border border-emerald-300 font-bold rounded-xl text-xs flex items-center justify-center space-x-2 transition">
+            <span>⇄ Ganti ke</span>
+            <span id="drawerToggleRoleText" class="underline">MODE TALENT</span>
+          </button>
+
+          <button onclick="resetApplicationData()" class="w-full py-1.5 text-slate-400 hover:text-rose-600 text-xs font-semibold">
+            🔄 Reset Data Demo
+          </button>
+
+          <button onclick="logoutAction()" class="w-full py-2 bg-slate-100 hover:bg-rose-50 text-slate-700 hover:text-rose-700 font-bold rounded-xl text-xs transition">
+            Keluar (Logout)
+          </button>
+        </div>
+      </div>
+      <div class="flex-1" onclick="toggleDrawer()"></div>
+    </div>
+
+    <!-- Global Modal Overlay -->
+    <div id="globalModalOverlay" class="hidden absolute inset-0 bg-slate-950/70 z-50 flex flex-col justify-end">
+      <div id="globalModalCard" class="bg-white rounded-t-3xl p-5 shadow-2xl max-h-[90%] overflow-y-auto no-scrollbar space-y-4">
+        <!-- Modal body injected dynamically -->
+      </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toastNotification" class="hidden absolute top-12 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white px-4 py-2.5 rounded-2xl shadow-xl z-50 text-xs font-bold flex items-center space-x-2 border border-slate-700 max-w-[90%] text-center">
+      <span id="toastIcon">✓</span>
+      <span id="toastMessage">Notifikasi</span>
+    </div>
+
+  </div>
+
+  <!-- SCRIPT CONTROLLER ENGINE -->
+  <script>
+    const STORAGE_KEY = 'SUARA_SYIAR_PROD_DATA_v4';
+    const TODAY = new Date().toISOString().slice(0, 10);
+
+    const BANK_LIST = {
+      'Bank Syariah Indonesia (BSI)': { code: 'BSI', prefix: '8805', fee: 0, tag: 'Bebas Riba ⭐' },
+      'Bank Mandiri': { code: 'MANDIRI', prefix: '8804', fee: 0, tag: 'Otomatis' },
+      'Bank BCA': { code: 'BCA', prefix: '8803', fee: 0, tag: 'Realtime' },
+      'Bank BRI': { code: 'BRI', prefix: '8802', fee: 0, tag: 'Konfirmasi Instan' },
+      'Bank BNI': { code: 'BNI', prefix: '8801', fee: 0, tag: '24 Jam' },
+      'Bank CIMB Niaga': { code: 'CIMB', prefix: '8806', fee: 0, tag: 'Online' },
+      'SeaBank': { code: 'SEABANK', prefix: '8807', fee: 0, tag: 'Bebas Biaya' }
+    };
+
+    const INITIAL_TALENTS = [
+      {
+        id: 1,
+        nama: "Gus Miftah",
+        kategori: "USTADZ",
+        label: "Pendakwah & Ulama Nusantara",
+        kota: "Surabaya",
+        provinsi: "Jawa Timur",
+        tarif: 75000000,
+        rating: 5.0,
+        totalUlasan: 1432,
+        foto: "https://media.suara.com/pictures/653x366/2022/02/21/25210-siapa-gus-miftah.jpg",
+        bio: "K.H. Miftah Maulana Habiburrahman, pengasuh Pondok Pesantren Ora Aji Sleman. Berpengalaman mengisi tabligh akbar nasional, maulid nabi, dan pengajian kerakyatan.",
+        isVerified: true
+      },
+      {
+        id: 2,
+        nama: "Gus Iqdham",
+        kategori: "USTADZ",
+        label: "Pendakwah Majelis Sabilu Taubah",
+        kota: "Sidoarjo",
+        provinsi: "Jawa Timur",
+        tarif: 50000000,
+        rating: 4.9,
+        totalUlasan: 980,
+        foto: "data:image/jpeg;base64,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",
+        bio: "Pendakwah muda pengasuh Majelis Sabilu Taubah Blitar. Mengajak jamaah menuju kebaikan dengan bahasa santai dan tausiyah menyentuh kalbu.",
+        isVerified: true
+      },
+      {
+        id: 3,
+        nama: "Mister Siluman",
+        kategori: "MC",
+        label: "Master of Ceremony Acara Islami",
+        kota: "Surabaya",
+        provinsi: "Jawa Timur",
+        tarif: 22000000,
+        rating: 4.8,
+        totalUlasan: 312,
+        foto: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRwmtNoN1rLzr8c-wnWAX2Ay4O8csxf1FIDkdJHlupJrA&s",
+        bio: "Pembawa acara profesional untuk peringatan hari besar Islam, tabligh akbar maulid, akad nikah, dan walimah syar'i.",
+        isVerified: true
+      },
+      {
+        id: 4,
+        nama: "Ustadzah Oki Setiana",
+        kategori: "USTADZAH",
+        label: "Ustadzah & Pengasuh Kajian Muslimah",
+        kota: "Malang",
+        provinsi: "Jawa Timur",
+        tarif: 45000000,
+        rating: 4.9,
+        totalUlasan: 450,
+        foto: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ3b8PjfYx_wJg7pFzvDYwuP691PpjxcEs7CCWk1yLo1Q&s=10",
+        bio: "Narasumber parenting Islami, kajian fiqih wanita, serta tausiyah majelis taklim terkemuka di Jawa Timur.",
+        isVerified: true
+      },
+      {
+        id: 5,
+        nama: "Ustad Adi Hidayat",
+        kategori: "Ustad",
+        label: "Ulama, Da'i (Pendakwah), Penceramah, dan Mubaligh",
+        kota: "Pandeglang",
+        provinsi: "Banten",
+        tarif: 8500000,
+        rating: 5.0,
+        totalUlasan: 210,
+        foto: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRWM11PUkCqMfZ7YLEa-z5Q00PC37fdx-XhsvpRaLtR5A&s=10",
+        bio: "Juara MTQ Nasional cabang tilawah dewasa. Pembacaan ayat suci Al-Qur'an dengan maqam merdu dan syahdu.",
+        isVerified: true
+      },
+      {
+        id: 6,
+        nama: "Tim Hadrah Syifaul Qulub",
+        kategori: "HADRAH",
+        label: "Grup Hadrah & Sholawat 12 Personel",
+        kota: "Sidoarjo",
+        provinsi: "Jawa Timur",
+        tarif: 12000000,
+        rating: 4.9,
+        totalUlasan: 520,
+        foto: "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=300&auto=format&fit=crop&q=80",
+        bio: "Grup sholawat Al-Banjari lengkap dengan vokal, terbang, dan sound system berkualitas tinggi untuk perayaan Maulid Nabi.",
+        isVerified: true
+      }
+    ];
+
+    const DEFAULT_STORE = {
+      activeRole: 'PENYEWA',
+      currentUser: { id: 'usr_penyewa_01', nama: 'Surya Kencana', email: 'surya@suarasyiar.com' },
+      talentProfile: {
+        id: 'tal_01',
+        talentId: 1,
+        nama: 'Gus Miftah',
+        email: 'gusmiftah@suarasyiar.com',
+        bankName: 'Bank Syariah Indonesia (BSI)',
+        rekening: '7148902341',
+        namaPemilik: 'Miftah Maulana H.',
+        walletBalance: 27000000,
+        isVerified: true,
+        foto: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=300&auto=format&fit=crop&q=80'
+      },
+      cart: [
+        {
+          id: 'c1',
+          talentId: 1,
+          jenisAcara: 'Pengajian Maulid Akbar',
+          tanggalAcara: '2026-11-25',
+          jamMulai: '19:00 WIB',
+          lokasi: 'Masjid Agung Surabaya',
+          materi: 'Karakter Nabi Muhammad SAW',
+          harga: 75000000,
+          checked: true
+        },
+        {
+          id: 'c2',
+          talentId: 3,
+          jenisAcara: 'MC Pengajian Maulid',
+          tanggalAcara: '2026-11-25',
+          jamMulai: '18:30 WIB',
+          lokasi: 'Masjid Agung Surabaya',
+          materi: 'Pemandu Acara',
+          harga: 22000000,
+          checked: true
+        }
+      ],
+      orders: [
+        {
+          id: 'ORD-9821',
+          penyewaNama: 'Surya Kencana',
+          talentId: 1,
+          talentNama: 'Gus Miftah',
+          jenisAcara: 'Pengajian Aqiqah',
+          tanggalAcara: '2026-09-08',
+          jamMulai: '15:00 WIB',
+          lokasi: 'Jl. Jetis Kulon 88, Surabaya',
+          materi: 'Keberkahan Anak Saleh',
+          harga: 75000000,
+          status: 'DONE',
+          bankTujuan: 'Bank Syariah Indonesia (BSI)',
+          vaNumber: '88059821004123',
+          paid: true,
+          presencePhoto: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=400&auto=format&fit=crop&q=80',
+          rating: 5,
+          reviewText: 'Alhamdulillah ceramah sangat menyentuh hati jamaah, hadir tepat waktu.'
+        },
+        {
+          id: 'ORD-9822',
+          penyewaNama: 'Surya Kencana',
+          talentId: 1,
+          talentNama: 'Gus Miftah',
+          jenisAcara: 'Tabligh Akbar Maulid',
+          tanggalAcara: '2026-10-29',
+          jamMulai: '19:00 WIB',
+          lokasi: 'Jl. Ahmad Yani, Bandung',
+          materi: 'Aqidah dan Akhlak',
+          harga: 75000000,
+          status: 'ACCEPTED',
+          bankTujuan: 'Bank Mandiri',
+          vaNumber: '88049822194821',
+          paid: true,
+          presencePhoto: null,
+          rating: null,
+          reviewText: null
+        }
+      ],
+      rundowns: [
+        {
+          id: 'rd_01',
+          namaAcara: 'Tabligh Akbar Maulid Nabi 1448H',
+          tanggalAcara: '2026-10-29',
+          items: [
+            { jamMulai: '19:00', jamSelesai: '19:30', keterangan: 'Pembukaan & Lantunan Rawi Hadrah' },
+            { jamMulai: '19:30', jamSelesai: '21:00', keterangan: 'Mauidhoh Hasanah oleh Gus Miftah' },
+            { jamMulai: '21:00', jamSelesai: '21:30', keterangan: 'Doa Penutup & Ramah Tamah' }
+          ]
+        }
+      ],
+      blockedDates: ['2026-09-01', '2026-09-06'],
+      chats: {
+        'ORD-9822': [
+          { sender: 'talent', text: "Assalamu'alaikum. Acaranya fiks di tanggal 29 ya?", time: '10:14' },
+          { sender: 'penyewa', text: "Wa'alaikumsalam gus, benar fiks tanggal 29 di Bandung.", time: '10:15' },
+          { sender: 'penyewa', text: "Untuk materi mohon disisipkan bab aqidah dan ukhuwah ya gus.", time: '10:16' }
+        ]
+      },
+      security: { loginAttempts: 0, lockedUntil: 0 }
+    };
+
+    let store = loadStore();
+
+    function loadStore() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) return { ...DEFAULT_STORE, ...JSON.parse(raw) };
+      } catch (e) {}
+      return JSON.parse(JSON.stringify(DEFAULT_STORE));
+    }
+
+    function saveStore() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
+      } catch (e) {}
+    }
+
+    const fmtRupiah = n => 'Rp ' + Number(n).toLocaleString('id-ID');
+    const fmtTanggalIndo = str => {
+      if (!str) return '-';
+      const [y, m, d] = str.split('-');
+      const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+      return `${parseInt(d)} ${months[parseInt(m) - 1]} ${y}`;
+    };
+
+    function escapeHtml(str) {
+      if (typeof str !== 'string') return '';
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').trim();
+    }
+
+    function showToast(msg, icon = '✓') {
+      const el = document.getElementById('toastNotification');
+      document.getElementById('toastMessage').innerText = msg;
+      document.getElementById('toastIcon').innerText = icon;
+      el.classList.remove('hidden');
+      setTimeout(() => el.classList.add('hidden'), 2600);
+    }
+
+    let currentRoute = 'home';
+    let routeParams = {};
+    let searchCriteria = { kota: '', kategori: '', harga: '', query: '', tanggal: '' };
+    let wizardStep = 1;
+    let wizardTempData = { fotoProfil: null, fotoKtp: null, glare: false, keahlian: ['USTADZ'], tarif: 75000000, bank: 'Bank Syariah Indonesia (BSI)', noRek: '7148902341', namaPemilik: 'Gus Miftah Habiburrahman' };
+
+    function navigate(route, params = {}) {
+      currentRoute = route;
+      routeParams = params;
+      renderCurrentView();
+      updateNavigationUI();
+      document.getElementById('appViewport').scrollTop = 0;
+    }
+
+    function goHome() {
+      navigate(store.activeRole === 'TALENT' ? 'talent-calendar' : 'home');
+    }
+
+    function quickToggleRole() {
+      store.activeRole = store.activeRole === 'PENYEWA' ? 'TALENT' : 'PENYEWA';
+      saveStore();
+      updateNavigationUI();
+      showToast(`Beralih ke ${store.activeRole === 'TALENT' ? 'Mode Talent' : 'Mode Penyewa'}`);
+      goHome();
+    }
+
+    function toggleRoleAndCloseDrawer() {
+      toggleDrawer();
+      quickToggleRole();
+    }
+
+    function toggleDrawer() {
+      const overlay = document.getElementById('drawerOverlay');
+      const content = document.getElementById('drawerContent');
+      if (overlay.classList.contains('hidden')) {
+        overlay.classList.remove('hidden');
+        setTimeout(() => content.classList.remove('-translate-x-full'), 10);
+      } else {
+        content.classList.add('-translate-x-full');
+        setTimeout(() => overlay.classList.add('hidden'), 260);
+      }
+    }
+
+    function closeModal() {
+      document.getElementById('globalModalOverlay').classList.add('hidden');
+    }
+
+    function openModal(contentHtml) {
+      document.getElementById('globalModalCard').innerHTML = contentHtml;
+      document.getElementById('globalModalOverlay').classList.remove('hidden');
+    }
+
+    function resetApplicationData() {
+      if (confirm("Reset seluruh data aplikasi ke kondisi awal pabrik?")) {
+        localStorage.removeItem(STORAGE_KEY);
+        store = loadStore();
+        saveStore();
+        showToast("Data demo berhasil di-reset!", "🔄");
+        navigate('home');
+        toggleDrawer();
+      }
+    }
+
+    function logoutAction() {
+      toggleDrawer();
+      navigate('login');
+      showToast("Anda telah keluar.");
+    }
+
+    function isTalentDateUnavailable(talentId, dateStr) {
+      if (!dateStr) return false;
+      if (store.blockedDates.includes(dateStr)) return true;
+      return store.orders.some(o => o.talentId === talentId && o.tanggalAcara === dateStr && o.status !== 'REJECTED');
+    }
+
+    function updateNavigationUI() {
+      const isTalent = store.activeRole === 'TALENT';
+      const badge = document.getElementById('roleBadgeBtn');
+      const drawerToggle = document.getElementById('drawerToggleRoleText');
+      const drawerLinks = document.getElementById('drawerLinksContainer');
+      const btmNav = document.getElementById('bottomNavigationBar');
+      const dName = document.getElementById('drawerUserName');
+      const dEmail = document.getElementById('drawerUserEmail');
+      const dAvatar = document.getElementById('drawerAvatar');
+
+      if (isTalent) {
+        badge.innerText = 'Mode Talent';
+        badge.className = 'text-xs font-bold px-2.5 py-1 rounded-full bg-amber-100 text-amber-950 border border-amber-300 hover:bg-amber-200 transition';
+        drawerToggle.innerText = 'MODE PENYEWA';
+        dName.innerText = store.talentProfile.nama;
+        dEmail.innerText = store.talentProfile.email;
+        dAvatar.innerText = 'GM';
+        dAvatar.className = 'w-10 h-10 rounded-full bg-amber-700 text-white flex items-center justify-center font-bold text-sm shadow-sm';
+
+        btmNav.innerHTML = `
+          <button onclick="navigate('talent-calendar')" class="flex flex-col items-center text-xs font-bold ${currentRoute === 'talent-calendar' ? 'text-emerald-800' : 'text-slate-400 hover:text-slate-700'}">
+            <span class="text-base">📅</span>
+            <span>Kalender</span>
+          </button>
+          <button onclick="navigate('talent-acara')" class="flex flex-col items-center text-xs font-bold ${currentRoute === 'talent-acara' ? 'text-emerald-800' : 'text-slate-400 hover:text-slate-700'}">
+            <span class="text-base">📣</span>
+            <span>Acara</span>
+          </button>
+          <button onclick="navigate('talent-inbox')" class="flex flex-col items-center text-xs font-bold relative ${currentRoute === 'talent-inbox' ? 'text-emerald-800' : 'text-slate-400 hover:text-slate-700'}">
+            <span class="text-base">🔔</span>
+            <span class="absolute -top-1 right-2 px-1 py-0.2 bg-rose-600 text-white rounded-full text-[10px] font-black">${store.orders.filter(o => o.status === 'PAID').length}</span>
+            <span>Pesanan</span>
+          </button>
+          <button onclick="navigate('talent-profile')" class="flex flex-col items-center text-xs font-bold ${currentRoute === 'talent-profile' ? 'text-emerald-800' : 'text-slate-400 hover:text-slate-700'}">
+            <span class="text-base">👤</span>
+            <span>Profil</span>
+          </button>
+        `;
+
+        drawerLinks.innerHTML = `
+          <button onclick="navigate('talent-calendar'); toggleDrawer()" class="w-full text-left py-2.5 px-3 text-xs font-bold text-slate-800 hover:bg-emerald-50 rounded-xl flex items-center space-x-2.5">
+            <span>📅 Kalender & Blokir Tanggal</span>
+          </button>
+          <button onclick="navigate('talent-acara'); toggleDrawer()" class="w-full text-left py-2.5 px-3 text-xs font-bold text-slate-800 hover:bg-emerald-50 rounded-xl flex items-center space-x-2.5">
+            <span>📋 Daftar Acara Syiar</span>
+          </button>
+          <button onclick="navigate('talent-inbox'); toggleDrawer()" class="w-full text-left py-2.5 px-3 text-xs font-bold text-slate-800 hover:bg-emerald-50 rounded-xl flex items-center space-x-2.5">
+            <span>🔔 Permintaan Booking (${store.orders.filter(o => o.status === 'PAID').length})</span>
+          </button>
+          <button onclick="navigate('talent-wizard'); toggleDrawer()" class="w-full text-left py-2.5 px-3 text-xs font-bold text-slate-800 hover:bg-emerald-50 rounded-xl flex items-center space-x-2.5">
+            <span>📝 Wizard Verifikasi KTP 4 Tahap</span>
+          </button>
+        `;
+      } else {
+        badge.innerText = 'Mode Penyewa';
+        badge.className = 'text-xs font-bold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-950 border border-emerald-300 hover:bg-emerald-200 transition';
+        drawerToggle.innerText = 'MODE TALENT';
+        dName.innerText = store.currentUser.nama;
+        dEmail.innerText = store.currentUser.email;
+        dAvatar.innerText = 'SK';
+        dAvatar.className = 'w-10 h-10 rounded-full bg-emerald-800 text-white flex items-center justify-center font-bold text-sm shadow-sm';
+
+        btmNav.innerHTML = `
+          <button onclick="navigate('home')" class="flex flex-col items-center text-xs font-bold ${currentRoute === 'home' ? 'text-emerald-800' : 'text-slate-400 hover:text-slate-700'}">
+            <span class="text-base">🏠</span>
+            <span>Home</span>
+          </button>
+          <button onclick="navigate('cart')" class="flex flex-col items-center text-xs font-bold relative ${currentRoute === 'cart' ? 'text-emerald-800' : 'text-slate-400 hover:text-slate-700'}">
+            <span class="text-base">🛒</span>
+            <span class="absolute -top-1 right-2 px-1 py-0.2 bg-emerald-700 text-white rounded-full text-[10px] font-black">${store.cart.length}</span>
+            <span>Keranjang</span>
+          </button>
+          <button onclick="navigate('events')" class="flex flex-col items-center text-xs font-bold ${currentRoute === 'events' ? 'text-emerald-800' : 'text-slate-400 hover:text-slate-700'}">
+            <span class="text-base">📅</span>
+            <span>Event Saya</span>
+          </button>
+          <button onclick="navigate('rundown')" class="flex flex-col items-center text-xs font-bold ${currentRoute === 'rundown' ? 'text-emerald-800' : 'text-slate-400 hover:text-slate-700'}">
+            <span class="text-base">📋</span>
+            <span>Rundown</span>
+          </button>
+        `;
+
+        drawerLinks.innerHTML = `
+          <button onclick="navigate('home'); toggleDrawer()" class="w-full text-left py-2.5 px-3 text-xs font-bold text-slate-800 hover:bg-emerald-50 rounded-xl flex items-center space-x-2.5">
+            <span>🏠 Beranda & Cari Penceramah</span>
+          </button>
+          <button onclick="navigate('cart'); toggleDrawer()" class="w-full text-left py-2.5 px-3 text-xs font-bold text-slate-800 hover:bg-emerald-50 rounded-xl flex items-center space-x-2.5">
+            <span>🛒 Keranjang Pemesanan (${store.cart.length})</span>
+          </button>
+          <button onclick="navigate('events'); toggleDrawer()" class="w-full text-left py-2.5 px-3 text-xs font-bold text-slate-800 hover:bg-emerald-50 rounded-xl flex items-center space-x-2.5">
+            <span>📅 Riwayat Pesanan & Jadwal</span>
+          </button>
+          <button onclick="navigate('rundown'); toggleDrawer()" class="w-full text-left py-2.5 px-3 text-xs font-bold text-slate-800 hover:bg-emerald-50 rounded-xl flex items-center space-x-2.5">
+            <span>📋 Template Susunan Acara (Rundown)</span>
+          </button>
+        `;
+      }
+
+      if (['splash', 'login', 'talent-wizard'].includes(currentRoute)) {
+        btmNav.classList.add('hidden');
+      } else {
+        btmNav.classList.remove('hidden');
+      }
+    }
+
+    function renderCurrentView() {
+      const container = document.getElementById('appViewport');
+
+      switch (currentRoute) {
+        case 'splash':
+          container.innerHTML = viewSplash();
+          break;
+        case 'login':
+          container.innerHTML = viewLogin();
+          break;
+        case 'home':
+          container.innerHTML = viewHome();
+          break;
+        case 'talent-detail':
+          container.innerHTML = viewTalentDetail(routeParams.talentId);
+          break;
+        case 'cart':
+          container.innerHTML = viewCart();
+          break;
+        case 'events':
+          container.innerHTML = viewEvents();
+          break;
+        case 'rundown':
+          container.innerHTML = viewRundown();
+          break;
+        case 'chat':
+          container.innerHTML = viewChat(routeParams.orderId);
+          initChatDOM();
+          break;
+        case 'talent-calendar':
+          container.innerHTML = viewTalentCalendar();
+          break;
+        case 'talent-inbox':
+          container.innerHTML = viewTalentInbox();
+          break;
+        case 'talent-acara':
+          container.innerHTML = viewTalentAcara();
+          break;
+        case 'talent-presence':
+          container.innerHTML = viewTalentPresence(routeParams.orderId);
+          break;
+        case 'talent-profile':
+          container.innerHTML = viewTalentProfile();
+          break;
+        case 'talent-wizard':
+          container.innerHTML = viewTalentWizard();
+          break;
+        default:
+          container.innerHTML = viewHome();
+      }
+    }
+
+    function viewSplash() {
+      return `
+        <div class="screen-in min-h-full flex flex-col items-center justify-between p-6 text-center bg-white">
+          <div class="flex-1 flex flex-col items-center justify-center">
+            <div class="w-24 h-24 rounded-full bg-emerald-50 border-2 border-emerald-300 flex items-center justify-center text-4xl mb-4 shadow-sm animate-pulse">
+              🕌
+            </div>
+            <h1 class="text-3xl font-black text-emerald-950 tracking-tight">SUARA <span class="text-emerald-700">SYIAR</span></h1>
+            <p class="text-xs font-semibold text-slate-500 mt-2 max-w-xs">Platform Persewaan Penceramah, Pengajian Akbar, Qari & Hadroh Terpercaya</p>
+          </div>
+
+          <div class="w-full space-y-2">
+            <button onclick="navigate('home')" class="w-full py-3.5 bg-emerald-800 hover:bg-emerald-900 text-white font-bold rounded-2xl shadow-lg active:scale-95 transition text-xs">
+              BUKA APLIKASI
+            </button>
+            <p class="text-xs text-slate-400">Versi Produksi 2.0.5 • suarasyiar.com</p>
+          </div>
+        </div>
+      `;
+    }
+
+    function viewLogin() {
+      const now = Date.now();
+      const isLocked = store.security.lockedUntil > now;
+      const remainingSec = Math.ceil((store.security.lockedUntil - now) / 1000);
+
+      return `
+        <div class="screen-in min-h-full flex flex-col justify-between p-6 bg-white text-center">
+          <div>
+            <div class="w-12 h-12 rounded-full bg-emerald-100 mx-auto flex items-center justify-center text-xl mb-2">
+              🕌
+            </div>
+            <h2 class="text-2xl font-black text-emerald-950 tracking-tight">SUARA SYIAR</h2>
+            <p class="text-xs text-slate-500 mt-1">Masuk untuk mengelola pesanan atau jadwal dakwah</p>
+
+            ${isLocked ? `
+              <div class="mt-4 p-4 bg-rose-50 border border-rose-300 rounded-2xl text-xs text-rose-800 font-semibold text-left">
+                🚫 Akun dikunci demi keamanan karena 5 kali salah password berturut-turut. Tunggu <b>${remainingSec} detik</b> lagi.
+              </div>
+            ` : `
+              <div class="mt-6 text-left space-y-3">
+                <div>
+                  <label class="text-xs font-bold text-slate-700">Email Pengguna</label>
+                  <input id="inputEmailLogin" type="email" value="surya@suarasyiar.com" class="w-full mt-1 px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs focus:outline-none focus:border-emerald-600">
+                </div>
+                <div>
+                  <label class="text-xs font-bold text-slate-700">Kata Sandi</label>
+                  <input id="inputPassLogin" type="password" value="password123" class="w-full mt-1 px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs focus:outline-none focus:border-emerald-600">
+                </div>
+                <button onclick="handleLoginAttempt()" class="w-full py-3 bg-emerald-800 text-white font-bold rounded-xl text-xs shadow-md active:scale-95 transition">
+                  Masuk Akun
+                </button>
+              </div>
+
+              <div class="mt-5 p-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-left">
+                <span class="text-xs font-bold text-slate-700 block mb-2">Akses Cepat Pengujian:</span>
+                <div class="grid grid-cols-2 gap-2">
+                  <button onclick="quickLoginAs('penyewa')" class="py-2 bg-white border border-emerald-300 hover:bg-emerald-50 text-emerald-950 rounded-xl text-xs font-bold">
+                    👤 Sebagai Penyewa
+                  </button>
+                  <button onclick="quickLoginAs('talent')" class="py-2 bg-white border border-amber-300 hover:bg-amber-50 text-amber-950 rounded-xl text-xs font-bold">
+                    👳 Sebagai Talent
+                  </button>
+                </div>
+              </div>
+            `}
+          </div>
+
+          <p class="text-xs text-slate-400 mt-4 leading-relaxed">
+            Terlindungi enkripsi Argon2id & Dual-Token JWT • Syiar Aman
+          </p>
+        </div>
+      `;
+    }
+
+    function handleLoginAttempt() {
+      const email = document.getElementById('inputEmailLogin').value.trim();
+      const pass = document.getElementById('inputPassLogin').value;
+
+      if (!email.includes('@') || pass.length < 6) {
+        store.security.loginAttempts += 1;
+        if (store.security.loginAttempts >= 5) {
+          store.security.lockedUntil = Date.now() + 15 * 60 * 1000;
+          saveStore();
+          alert("Terlalu banyak percobaan gagal! Akun Anda dikunci selama 15 menit.");
+        } else {
+          saveStore();
+          alert(`Email atau sandi salah! Sisa percobaan: ${5 - store.security.loginAttempts}`);
+        }
+        renderCurrentView();
+        return;
+      }
+
+      store.security.loginAttempts = 0;
+      store.security.lockedUntil = 0;
+      saveStore();
+      showToast("Berhasil masuk!");
+      goHome();
+    }
+
+    function quickLoginAs(role) {
+      store.security.loginAttempts = 0;
+      store.security.lockedUntil = 0;
+      store.activeRole = role.toUpperCase();
+      saveStore();
+      showToast(`Masuk sebagai ${role === 'talent' ? 'Talent (Gus Miftah)' : 'Penyewa'}!`);
+      goHome();
+    }
+
+    function viewHome() {
+      const list = INITIAL_TALENTS.filter(t => {
+        if (searchCriteria.kota && t.kota !== searchCriteria.kota) return false;
+        if (searchCriteria.kategori && t.kategori !== searchCriteria.kategori) return false;
+        if (searchCriteria.harga === 'a' && t.tarif > 15000000) return false;
+        if (searchCriteria.harga === 'b' && (t.tarif <= 15000000 || t.tarif > 50000000)) return false;
+        if (searchCriteria.harga === 'c' && t.tarif <= 50000000) return false;
+        if (searchCriteria.tanggal && isTalentDateUnavailable(t.id, searchCriteria.tanggal)) return false;
+        if (searchCriteria.query && !t.nama.toLowerCase().includes(searchCriteria.query.toLowerCase())) return false;
+        return true;
+      });
+
+      return `
+        <div class="screen-in pb-8">
+          <div class="bg-white p-3 border-b border-slate-200 sticky top-0 z-30 shadow-2xs space-y-2">
+            <div class="relative">
+              <input type="text" placeholder="Cari nama Ustadz, Hadrah, atau Qari..." value="${escapeHtml(searchCriteria.query)}" oninput="searchCriteria.query = this.value; renderCurrentView();" class="w-full pl-8 pr-3 py-1.5 bg-slate-100 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-emerald-700">
+              <span class="absolute left-2.5 top-2 text-slate-400 text-xs">🔍</span>
+            </div>
+
+            <div class="grid grid-cols-3 gap-2">
+              <div>
+                <label class="text-[10px] uppercase font-bold text-slate-400 block">Kota</label>
+                <select onchange="searchCriteria.kota = this.value; renderCurrentView();" class="w-full text-xs font-bold text-slate-800 bg-transparent border-b py-0.5 focus:outline-none">
+                  <option value="">Semua Kota</option>
+                  <option value="Surabaya" ${searchCriteria.kota === 'Surabaya' ? 'selected' : ''}>Surabaya</option>
+                  <option value="Sidoarjo" ${searchCriteria.kota === 'Sidoarjo' ? 'selected' : ''}>Sidoarjo</option>
+                  <option value="Malang" ${searchCriteria.kota === 'Malang' ? 'selected' : ''}>Malang</option>
+                </select>
+              </div>
+              <div>
+                <label class="text-[10px] uppercase font-bold text-slate-400 block">Kategori</label>
+                <select onchange="searchCriteria.kategori = this.value; renderCurrentView();" class="w-full text-xs font-bold text-slate-800 bg-transparent border-b py-0.5 focus:outline-none">
+                  <option value="">Semua</option>
+                  <option value="USTADZ" ${searchCriteria.kategori === 'USTADZ' ? 'selected' : ''}>Ustadz</option>
+                  <option value="MC" ${searchCriteria.kategori === 'MC' ? 'selected' : ''}>MC</option>
+                  <option value="QARI" ${searchCriteria.kategori === 'QARI' ? 'selected' : ''}>Qari</option>
+                  <option value="HADRAH" ${searchCriteria.kategori === 'HADRAH' ? 'selected' : ''}>Hadrah</option>
+                </select>
+              </div>
+              <div>
+                <label class="text-[10px] uppercase font-bold text-slate-400 block">Tarif</label>
+                <select onchange="searchCriteria.harga = this.value; renderCurrentView();" class="w-full text-xs font-bold text-slate-800 bg-transparent border-b py-0.5 focus:outline-none">
+                  <option value="">Semua</option>
+                  <option value="a" ${searchCriteria.harga === 'a' ? 'selected' : ''}>≤ 15 Jt</option>
+                  <option value="b" ${searchCriteria.harga === 'b' ? 'selected' : ''}>15–50 Jt</option>
+                  <option value="c" ${searchCriteria.harga === 'c' ? 'selected' : ''}>&gt; 50 Jt</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="pt-1.5 border-t border-slate-100 flex items-center justify-between">
+              <span class="text-xs text-slate-500 font-semibold">Ketersediaan Tanggal:</span>
+              <input type="date" min="${TODAY}" value="${searchCriteria.tanggal}" onchange="searchCriteria.tanggal = this.value; renderCurrentView();" class="text-xs bg-slate-50 border border-slate-300 rounded-lg px-2 py-0.5 font-bold text-slate-700">
+            </div>
+          </div>
+
+          <div class="p-4 space-y-4">
+            <div class="rounded-3xl p-4 bg-gradient-to-r from-emerald-950 via-emerald-900 to-teal-800 text-white shadow-md relative overflow-hidden">
+              <span class="inline-block px-2.5 py-0.5 rounded-full bg-emerald-600/40 text-[10px] font-bold uppercase tracking-wider border border-emerald-400/30">
+                Pilihan Minggu Ini
+              </span>
+              <h3 class="text-xl font-black mt-2 tracking-tight">MAULID NABI 1448H</h3>
+              <p class="text-xs text-emerald-100 mt-0.5 flex items-center space-x-1">
+                <span>08 Oktober 2026</span> • <span>Bekasi Timur</span>
+              </p>
+            </div>
+
+            <div>
+              <div class="flex items-center justify-between mb-2.5">
+                <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider">Tampilan Talent Pilihan</h4>
+                <span class="text-xs text-slate-400 font-semibold">${list.length} Tersedia</span>
+              </div>
+
+              ${list.length ? `
+                <div class="grid grid-cols-2 gap-3">
+                  ${list.map(t => `
+                    <div onclick="navigate('talent-detail', { talentId: ${t.id} })" class="bg-white border border-slate-200 rounded-2xl p-3 shadow-xs hover:shadow-md transition cursor-pointer flex flex-col items-center text-center group">
+                      <div class="w-16 h-16 rounded-full overflow-hidden border-2 border-emerald-600 mb-2 relative shadow-inner">
+                        <img src="${t.foto}" alt="${t.nama}" class="w-full h-full object-cover group-hover:scale-105 transition">
+                        ${t.isVerified ? `<span class="absolute bottom-0 right-0 w-4 h-4 bg-emerald-600 text-white rounded-full text-[9px] flex items-center justify-center font-bold">✓</span>` : ''}
+                      </div>
+                      <h5 class="text-xs font-bold text-slate-900 truncate w-full">${t.nama}</h5>
+                      <p class="text-xs text-slate-500 truncate w-full">${t.label}</p>
+                      <div class="flex items-center space-x-1 text-amber-500 text-xs font-bold mt-1">
+                        <span>★ ${t.rating.toFixed(1)}</span>
+                        <span class="text-slate-400 font-normal">(${t.totalUlasan})</span>
+                      </div>
+                      <span class="mt-2 text-xs font-black text-emerald-950">${fmtRupiah(t.tarif)}</span>
+                    </div>
+                  `).join('')}
+                </div>
+              ` : `
+                <div class="p-8 bg-white border border-slate-200 rounded-2xl text-center text-xs text-slate-400">
+                  Tidak ada talent yang cocok dengan filter pencarian.
+                </div>
+              `}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function viewTalentDetail(talentId) {
+      const talent = INITIAL_TALENTS.find(t => t.id === talentId) || INITIAL_TALENTS[0];
+      const blocked = [...new Set([...store.blockedDates, ...store.orders.filter(o => o.talentId === talent.id && o.status !== 'REJECTED').map(o => o.tanggalAcara)])].sort();
+
+      return `
+        <div class="screen-in pb-8 bg-white min-h-full flex flex-col justify-between">
+          <div>
+            <div class="px-4 py-3 flex items-center justify-between border-b border-slate-100">
+              <button onclick="navigate('home')" class="p-1 text-slate-600 hover:text-emerald-700 font-bold text-xs">
+                ← Kembali
+              </button>
+              <span class="text-xs font-bold text-slate-700">Profil Talent</span>
+              <div class="w-6"></div>
+            </div>
+
+            <div class="p-5 flex flex-col items-center text-center">
+              <div class="w-24 h-24 rounded-full overflow-hidden border-4 border-emerald-600 shadow-md mb-2">
+                <img src="${talent.foto}" alt="${talent.nama}" class="w-full h-full object-cover">
+              </div>
+              <h3 class="text-lg font-black text-slate-900">${talent.nama}</h3>
+              <p class="text-xs text-slate-500 font-medium">${talent.label} • ${talent.kota}</p>
+
+              <div class="flex items-center space-x-1 text-amber-500 text-xs font-bold mt-1">
+                <span>★★★★★</span>
+                <span class="text-slate-800">5.0</span>
+                <span class="text-slate-400 font-normal">(${talent.totalUlasan} ulasan)</span>
+              </div>
+              <span class="mt-2 text-xs font-bold px-3 py-0.5 rounded-full bg-emerald-100 text-emerald-950 border border-emerald-300">
+                Terverifikasi KTP & Rekening ✓
+              </span>
+
+              <div class="w-full text-left mt-4 space-y-2.5">
+                <div class="p-3 bg-slate-50 border border-slate-200 rounded-2xl">
+                  <h5 class="text-xs font-bold text-slate-800 uppercase tracking-wider mb-1">Biodata</h5>
+                  <p class="text-xs text-slate-600 leading-relaxed">${talent.bio}</p>
+                </div>
+
+                <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-2xl">
+                  <h5 class="text-xs font-bold text-emerald-950 uppercase tracking-wider mb-1">Jadwal Padat / Penuh:</h5>
+                  <p class="text-xs text-emerald-900">
+                    ${blocked.length ? blocked.map(fmtTanggalIndo).join(', ') : 'Semua tanggal masih tersedia.'}
+                  </p>
+                </div>
+              </div>
+
+              <div class="w-full text-left mt-4 p-4 border border-slate-200 rounded-2xl space-y-2.5 bg-slate-50">
+                <h5 class="text-xs font-bold text-slate-800">Form Permohonan Acara:</h5>
+                <div>
+                  <label class="text-xs font-semibold text-slate-600">Nama Acara</label>
+                  <input id="detailAcaraInput" type="text" placeholder="mis. Pengajian Akbar Maulid" class="w-full mt-1 px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs">
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                  <div>
+                    <label class="text-xs font-semibold text-slate-600">Tanggal Acara</label>
+                    <input id="detailTanggalInput" type="date" min="${TODAY}" class="w-full mt-1 px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-bold">
+                  </div>
+                  <div>
+                    <label class="text-xs font-semibold text-slate-600">Jam Mulai</label>
+                    <input id="detailJamInput" type="text" value="19:00 WIB" class="w-full mt-1 px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs">
+                  </div>
+                </div>
+                <div>
+                  <label class="text-xs font-semibold text-slate-600">Lokasi / Alamat Lengkap</label>
+                  <input id="detailLokasiInput" type="text" placeholder="mis. Masjid Jami' Jl. Ahmad Yani No. 12" class="w-full mt-1 px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-4 border-t border-slate-100">
+            <button onclick="commitTalentToCart(${talent.id})" class="w-full py-3.5 bg-emerald-800 hover:bg-emerald-900 text-white font-bold rounded-2xl text-xs shadow-md active:scale-95 transition">
+              + Masukkan Keranjang (${fmtRupiah(talent.tarif)})
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    function commitTalentToCart(talentId) {
+      const talent = INITIAL_TALENTS.find(t => t.id === talentId);
+      const ev = document.getElementById('detailAcaraInput').value.trim();
+      const dt = document.getElementById('detailTanggalInput').value;
+      const jm = document.getElementById('detailJamInput').value.trim();
+      const lc = document.getElementById('detailLokasiInput').value.trim();
+
+      if (!ev) return alert("Harap isi nama acara.");
+      if (!dt || dt < TODAY) return alert("Pilih tanggal acara yang valid.");
+      if (!lc) return alert("Harap isi alamat lokasi acara.");
+
+      if (isTalentDateUnavailable(talent.id, dt)) {
+        return alert(`Jadwal ${talent.nama} pada ${fmtTanggalIndo(dt)} sudah terisi atau diblokir.`);
+      }
+
+      store.cart.push({
+        id: 'c_' + Date.now(),
+        talentId: talent.id,
+        jenisAcara: ev,
+        tanggalAcara: dt,
+        jamMulai: jm || '19:00 WIB',
+        lokasi: lc,
+        materi: 'Tausiyah Keagamaan',
+        harga: talent.tarif,
+        checked: true
+      });
+
+      saveStore();
+      showToast(`${talent.nama} ditambahkan ke keranjang!`);
+      navigate('cart');
+    }
+
+    function viewCart() {
+      const checkedOnes = store.cart.filter(item => item.checked);
+      const subtotal = checkedOnes.reduce((acc, curr) => acc + curr.harga, 0);
+
+      return `
+        <div class="screen-in pb-8 p-4 flex flex-col justify-between min-h-full">
+          <div>
+            <h3 class="text-sm font-bold text-slate-800 mb-3 flex items-center space-x-2">
+              <span class="text-base">🛒</span>
+              <span>Keranjang Pemesanan (${store.cart.length} Item)</span>
+            </h3>
+
+            ${store.cart.length ? `
+              <div class="space-y-3">
+                ${store.cart.map(item => {
+                  const talent = INITIAL_TALENTS.find(t => t.id === item.talentId);
+                  return `
+                    <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-3 flex items-start space-x-3">
+                      <input type="checkbox" ${item.checked ? 'checked' : ''} onchange="toggleCartCheckbox('${item.id}')" class="mt-2 rounded text-emerald-800 w-4 h-4">
+                      <img src="${talent ? talent.foto : ''}" class="w-12 h-12 rounded-xl object-cover border border-emerald-300">
+                      <div class="flex-1">
+                        <div class="flex items-start justify-between">
+                          <h5 class="text-xs font-bold text-slate-900">${talent ? talent.nama : 'Talent'}</h5>
+                          <button onclick="deleteCartItem('${item.id}')" class="text-slate-400 hover:text-rose-600 text-xs font-bold">✕</button>
+                        </div>
+                        <p class="text-xs text-slate-600">${item.jenisAcara}</p>
+                        <p class="text-xs text-slate-500">${fmtTanggalIndo(item.tanggalAcara)} • ${item.jamMulai}</p>
+                        <span class="text-xs font-black text-emerald-950 mt-1 block">${fmtRupiah(item.harga)}</span>
+                      </div>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+
+              <div class="mt-4 p-3.5 bg-white border border-slate-200 rounded-2xl space-y-2">
+                <div class="flex items-center justify-between text-xs text-slate-500">
+                  <span>Talent Terpilih:</span>
+                  <span class="font-bold text-slate-800">${checkedOnes.length} Pilihan</span>
+                </div>
+                <div class="flex items-center justify-between pt-2 border-t border-slate-100 text-xs">
+                  <span class="font-bold text-slate-700">Total Tagihan Infaq:</span>
+                  <span class="text-base font-black text-emerald-950">${fmtRupiah(subtotal)}</span>
+                </div>
+              </div>
+            ` : `
+              <div class="p-8 bg-white border border-slate-200 rounded-2xl text-center text-xs text-slate-400">
+                <span class="text-3xl block mb-2">🛒</span>
+                Keranjang masih kosong.
+                <button onclick="navigate('home')" class="mt-3 block mx-auto px-4 py-2 bg-emerald-800 text-white rounded-xl font-bold">
+                  Pilih Penceramah di Beranda
+                </button>
+              </div>
+            `}
+          </div>
+
+          ${store.cart.length && checkedOnes.length ? `
+            <div class="mt-6">
+              <button onclick="openVABankModal()" class="w-full py-3.5 bg-emerald-800 hover:bg-emerald-900 text-white font-bold rounded-2xl text-xs shadow-md active:scale-95 transition">
+                Lanjut ke Pembayaran Virtual Account (${fmtRupiah(subtotal)})
+              </button>
+            </div>
+          ` : ''}
+        </div>
+      `;
+    }
+
+    function toggleCartCheckbox(cartId) {
+      const it = store.cart.find(c => c.id === cartId);
+      if (it) it.checked = !it.checked;
+      saveStore();
+      renderCurrentView();
+    }
+
+    function deleteCartItem(cartId) {
+      store.cart = store.cart.filter(c => c.id !== cartId);
+      saveStore();
+      renderCurrentView();
+      showToast("Talent dihapus dari keranjang.");
+    }
+
+    function openVABankModal() {
+      const checked = store.cart.filter(c => c.checked);
+      if (!checked.length) return;
+      const total = checked.reduce((a, b) => a + b.harga, 0);
+
+      const html = `
+        <div class="space-y-3">
+          <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+            <h4 class="text-sm font-bold text-slate-900">Pilih Bank Pembayaran (VA)</h4>
+            <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 font-bold">✕</button>
+          </div>
+
+          <p class="text-xs text-slate-500">Nomor Virtual Account resmi akan dibuat secara instan untuk tagihan ${fmtRupiah(total)}.</p>
+
+          <div class="space-y-2 max-h-64 overflow-y-auto no-scrollbar">
+            ${Object.entries(BANK_LIST).map(([bankName, cfg]) => `
+              <div onclick="executeVABooking('${bankName}')" class="p-3 bg-slate-50 hover:bg-emerald-50 border border-slate-200 hover:border-emerald-500 rounded-xl flex items-center justify-between cursor-pointer transition">
+                <span class="text-xs font-bold text-slate-800">${bankName}</span>
+                <span class="text-[11px] font-semibold text-emerald-900 bg-emerald-100 px-2.5 py-0.5 rounded-full">${cfg.tag}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+      openModal(html);
+    }
+
+    function executeVABooking(bankName) {
+      const cfg = BANK_LIST[bankName];
+      const checked = store.cart.filter(c => c.checked);
+      const total = checked.reduce((a, b) => a + b.harga, 0);
+      const va = cfg.prefix + String(Math.floor(1000000000 + Math.random() * 9000000000));
+
+      const createdOrderIds = [];
+      checked.forEach(item => {
+        const talent = INITIAL_TALENTS.find(t => t.id === item.talentId);
+        const orderId = 'ORD-' + Math.floor(1000 + Math.random() * 9000);
+        const newOrder = {
+          id: orderId,
+          penyewaNama: store.currentUser.nama,
+          talentId: item.talentId,
+          talentNama: talent ? talent.nama : 'Talent',
+          jenisAcara: item.jenisAcara,
+          tanggalAcara: item.tanggalAcara,
+          jamMulai: item.jamMulai,
+          lokasi: item.lokasi,
+          materi: item.materi,
+          harga: item.harga,
+          status: 'PENDING',
+          bankTujuan: bankName,
+          vaNumber: va,
+          paid: false,
+          presencePhoto: null,
+          rating: null,
+          reviewText: null
+        };
+        store.orders.unshift(newOrder);
+        createdOrderIds.push(orderId);
+      });
+
+      store.cart = store.cart.filter(c => !c.checked);
+      saveStore();
+
+      const modalHtml = `
+        <div class="space-y-4 text-center">
+          <div class="w-12 h-12 rounded-full bg-emerald-100 text-emerald-800 mx-auto flex items-center justify-center text-xl">
+            🏦
+          </div>
+          <h4 class="text-sm font-bold text-slate-900">Virtual Account ${bankName}</h4>
+          
+          <div class="p-4 bg-emerald-50 border border-emerald-300 rounded-2xl">
+            <span class="text-xs text-slate-500">Nomor Virtual Account:</span>
+            <div class="text-lg font-mono font-black text-emerald-950 tracking-wider my-1 select-all cursor-pointer" onclick="navigator.clipboard.writeText('${va}'); showToast('Nomor VA tersalin!');" title="Klik untuk salin">
+              ${va.replace(/(.{4})/g, '$1 ').trim()}
+            </div>
+            <span class="text-[10px] text-emerald-800 block underline cursor-pointer" onclick="navigator.clipboard.writeText('${va}'); showToast('Nomor VA tersalin!');">Salin Nomor VA</span>
+            <div class="text-xs text-slate-600 mt-2">Total Pembayaran: <b class="text-emerald-950">${fmtRupiah(total)}</b></div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2 mt-4">
+            <button onclick="payVASimulation('${createdOrderIds[0]}')" class="py-2.5 bg-emerald-800 hover:bg-emerald-900 text-white font-bold rounded-xl text-xs shadow-md">
+              Simulasi Bayar Sekarang
+            </button>
+            <button onclick="closeModal(); navigate('events');" class="py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold rounded-xl text-xs">
+              Bayar Nanti
+            </button>
+          </div>
+        </div>
+      `;
+      openModal(modalHtml);
+    }
+
+    function payVASimulation(orderId) {
+      const order = store.orders.find(o => o.id === orderId);
+      if (order) {
+        order.status = 'PAID';
+        order.paid = true;
+      }
+      saveStore();
+      closeModal();
+      showToast("Pembayaran VA Berhasil Dikonfirmasi!");
+      navigate('events');
+    }
+
+    function viewEvents() {
+      return `
+        <div class="screen-in pb-8 p-4">
+          <h3 class="text-sm font-bold text-slate-800 mb-3 flex items-center space-x-2">
+            <span class="text-base">📅</span>
+            <span>Jadwal & Riwayat Acara Syiar</span>
+          </h3>
+
+          ${store.orders.length ? `
+            <div class="space-y-3">
+              ${store.orders.map(o => `
+                <div class="bg-white border border-slate-200 rounded-2xl p-3.5 shadow-2xs space-y-2">
+                  <div class="flex items-start justify-between">
+                    <div>
+                      <h4 class="text-xs font-bold text-slate-900">${o.jenisAcara}</h4>
+                      <p class="text-xs text-slate-600 font-medium">${o.talentNama} • ${fmtRupiah(o.harga)}</p>
+                      <p class="text-xs text-slate-500 mt-0.5">${fmtTanggalIndo(o.tanggalAcara)} • ${o.jamMulai}</p>
+                      <p class="text-xs text-slate-400">${o.lokasi}</p>
+                    </div>
+                    <span class="text-xs font-bold px-2 py-0.5 rounded-full ${
+                      o.status === 'DONE' ? 'bg-emerald-100 text-emerald-950 border border-emerald-300' :
+                      o.status === 'ACCEPTED' ? 'bg-blue-100 text-blue-950 border border-blue-300' :
+                      o.status === 'PAID' ? 'bg-amber-100 text-amber-950 border border-amber-300' :
+                      'bg-slate-100 text-slate-700'
+                    }">
+                      ${o.status === 'DONE' ? 'Selesai' : o.status === 'ACCEPTED' ? 'Diterima' : o.status === 'PAID' ? 'Menunggu Konfirmasi' : 'Belum Bayar'}
+                    </span>
+                  </div>
+
+                  <div class="flex items-center space-x-2 pt-2 border-t border-slate-100">
+                    <button onclick="navigate('chat', { orderId: '${o.id}' })" class="flex-1 py-1.5 bg-emerald-800 hover:bg-emerald-900 text-white rounded-xl text-xs font-bold shadow-2xs">
+                      Room Chat
+                    </button>
+                    ${o.status === 'DONE' ? `
+                      <button onclick="openReviewModal('${o.id}')" class="px-3 py-1.5 bg-amber-50 text-amber-950 border border-amber-300 rounded-xl text-xs font-bold">
+                        ${o.rating ? `★ ${o.rating}.0` : 'Beri Nilai'}
+                      </button>
+                    ` : ''}
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          ` : `
+            <div class="p-8 bg-white border border-slate-200 rounded-2xl text-center text-xs text-slate-400">
+              Belum ada pesanan aktif.
+            </div>
+          `}
+        </div>
+      `;
+    }
+
+    function viewRundown() {
+      return `
+        <div class="screen-in pb-8 p-4 space-y-4">
+          <h3 class="text-sm font-bold text-slate-800 flex items-center space-x-2">
+            <span class="text-base">📋</span>
+            <span>Template Susunan Acara (Rundown)</span>
+          </h3>
+
+          <div class="bg-white border border-slate-200 rounded-2xl p-4 space-y-3 shadow-2xs">
+            <div>
+              <label class="text-xs font-bold text-slate-700">Nama Acara</label>
+              <input id="inputRundownName" type="text" value="Tabligh Akbar Maulid Nabi 1448H" class="w-full mt-1 px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold">
+            </div>
+
+            <div>
+              <label class="text-xs font-bold text-slate-700">Tanggal Acara</label>
+              <input id="inputRundownDate" type="date" value="2026-10-29" class="w-full mt-1 px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold">
+            </div>
+
+            <div>
+              <div class="flex items-center justify-between mb-1">
+                <label class="text-xs font-bold text-slate-700">Timeline Sesi Acara</label>
+                <button onclick="appendRundownSessionRow()" class="text-xs text-emerald-800 font-bold hover:underline">+ Tambah Baris Sesi</button>
+              </div>
+
+              <div id="rundownRowsContainer" class="space-y-2">
+                <div class="flex items-center space-x-1.5 bg-slate-50 p-2 rounded-xl border border-slate-200 text-xs">
+                  <input type="time" value="19:00" class="rd-s px-1 py-1 bg-white border rounded text-center w-16">
+                  <span>-</span>
+                  <input type="time" value="19:30" class="rd-e px-1 py-1 bg-white border rounded text-center w-16">
+                  <input type="text" value="Pembukaan & Lantunan Rawi Hadrah" class="rd-k flex-1 px-2 py-1 bg-white border rounded">
+                </div>
+                <div class="flex items-center space-x-1.5 bg-slate-50 p-2 rounded-xl border border-slate-200 text-xs">
+                  <input type="time" value="19:30" class="rd-s px-1 py-1 bg-white border rounded text-center w-16">
+                  <span>-</span>
+                  <input type="time" value="21:00" class="rd-e px-1 py-1 bg-white border rounded text-center w-16">
+                  <input type="text" value="Mauidhoh Hasanah oleh Gus Miftah" class="rd-k flex-1 px-2 py-1 bg-white border rounded">
+                </div>
+              </div>
+            </div>
+
+            <button onclick="saveRundownData()" class="w-full py-3 bg-emerald-800 hover:bg-emerald-900 text-white font-bold rounded-xl text-xs shadow-md">
+              Simpan Rundown Acara
+            </button>
+          </div>
+
+          <div>
+            <h4 class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Rundown Tersimpan:</h4>
+            ${store.rundowns.map(r => `
+              <div class="p-3.5 bg-white border border-slate-200 rounded-2xl mb-2 space-y-1.5">
+                <div class="flex items-center justify-between font-bold text-xs text-slate-900">
+                  <span>${r.namaAcara}</span>
+                  <span class="text-emerald-800">${fmtTanggalIndo(r.tanggalAcara)}</span>
+                </div>
+                <div class="space-y-1">
+                  ${r.items.map(it => `
+                    <div class="text-xs text-slate-500 flex items-center space-x-2">
+                      <span class="font-mono text-slate-700">${it.jamMulai} - ${it.jamSelesai}</span>
+                      <span>•</span>
+                      <span>${it.keterangan}</span>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    function appendRundownSessionRow() {
+      const container = document.getElementById('rundownRowsContainer');
+      const div = document.createElement('div');
+      div.className = "flex items-center space-x-1.5 bg-slate-50 p-2 rounded-xl border border-slate-200 text-xs";
+      div.innerHTML = `
+        <input type="time" value="21:00" class="rd-s px-1 py-1 bg-white border rounded text-center w-16">
+        <span>-</span>
+        <input type="time" value="21:30" class="rd-e px-1 py-1 bg-white border rounded text-center w-16">
+        <input type="text" value="Doa Penutup & Mushofahah" class="rd-k flex-1 px-2 py-1 bg-white border rounded">
+      `;
+      container.appendChild(div);
+    }
+
+    function saveRundownData() {
+      const name = document.getElementById('inputRundownName').value.trim();
+      const date = document.getElementById('inputRundownDate').value;
+      if (!name) return alert("Isi nama acara.");
+
+      const sInputs = document.querySelectorAll('.rd-s');
+      const eInputs = document.querySelectorAll('.rd-e');
+      const kInputs = document.querySelectorAll('.rd-k');
+
+      const items = [];
+      for (let i = 0; i < sInputs.length; i++) {
+        items.push({
+          jamMulai: sInputs[i].value,
+          jamSelesai: eInputs[i].value,
+          keterangan: kInputs[i].value || 'Sesi Acara'
+        });
+      }
+
+      store.rundowns.unshift({
+        id: 'rd_' + Date.now(),
+        namaAcara: name,
+        tanggalAcara: date || TODAY,
+        items: items
+      });
+
+      saveStore();
+      showToast("Rundown acara berhasil disimpan!");
+      renderCurrentView();
+    }
+
+    function viewChat(orderId) {
+      const order = store.orders.find(o => o.id === orderId) || store.orders[0];
+      const isTalent = store.activeRole === 'TALENT';
+      const chatHistory = store.chats[order.id] || [];
+
+      return `
+        <div class="screen-in flex flex-col h-full bg-slate-100 relative">
+          <div class="bg-white px-4 py-2.5 border-b border-slate-200 flex items-center justify-between sticky top-0 z-30 flex-none shadow-2xs">
+            <div class="flex items-center space-x-2">
+              <button onclick="navigate('${isTalent ? 'talent-acara' : 'events'}')" class="p-1 text-slate-600 font-bold text-sm">
+                ←
+              </button>
+              <div class="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-xs font-bold text-emerald-950 border border-emerald-300">
+                ${isTalent ? '👤' : '👳'}
+              </div>
+              <div>
+                <h5 class="text-xs font-bold text-slate-900">${isTalent ? order.penyewaNama : order.talentNama}</h5>
+                <span class="text-[11px] text-emerald-700 font-semibold">Online • #${order.id}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-emerald-50 px-4 py-2 border-b border-emerald-200 text-xs text-slate-800 space-y-1 flex-none">
+            <div class="flex items-center justify-between font-bold text-emerald-950">
+              <span>${order.jenisAcara}</span>
+              <span>${fmtTanggalIndo(order.tanggalAcara)} • ${order.jamMulai}</span>
+            </div>
+            <p class="text-xs text-slate-500">${order.lokasi}</p>
+            <div onclick="previewPinnedRundownModal()" class="inline-flex items-center space-x-1.5 bg-white border border-emerald-300 px-2.5 py-1 rounded-lg text-xs font-bold text-emerald-900 cursor-pointer hover:bg-emerald-100">
+              <span>📎</span>
+              <span>Lampiran File Rundown Acara.pdf (Buka)</span>
+            </div>
+          </div>
+
+          <div id="chatScrollArea" class="flex-1 p-4 space-y-3 overflow-y-auto no-scrollbar">
+            ${chatHistory.map(m => renderChatBubble(m, isTalent)).join('')}
+          </div>
+
+          <div class="bg-white p-3 border-t border-slate-200 flex items-center space-x-2 flex-none z-30">
+            <button onclick="promptRundownAttachment('${order.id}')" class="p-2 text-slate-500 hover:text-emerald-800 rounded-full hover:bg-slate-100 text-sm font-bold" title="Lampirkan Rundown">
+              📎
+            </button>
+            <input 
+              id="chatKeyboardInput" 
+              type="text" 
+              placeholder="Ketik pesan syiar disini..." 
+              autocomplete="off" 
+              class="flex-1 px-3.5 py-2.5 bg-slate-100 border border-slate-200 rounded-full text-xs text-slate-900 focus:outline-none focus:ring-1 focus:ring-emerald-700"
+            >
+            <button 
+              id="sendChatButton" 
+              class="w-9 h-9 rounded-full bg-emerald-800 text-white flex items-center justify-center hover:bg-emerald-900 active:scale-95 transition"
+            >
+              ➤
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderChatBubble(msg, isTalent) {
+      const isMe = msg.sender === (isTalent ? 'talent' : 'penyewa');
+      return `
+        <div class="flex ${isMe ? 'justify-end' : 'justify-start'}">
+          <div class="max-w-[78%] p-3 rounded-2xl ${
+            isMe
+              ? 'bg-emerald-800 text-white rounded-br-none shadow-2xs'
+              : 'bg-white border border-slate-200 text-slate-800 rounded-bl-none shadow-2xs'
+          }">
+            <p class="text-xs leading-relaxed whitespace-pre-wrap">${escapeHtml(msg.text)}</p>
+            <span class="text-[10px] block text-right mt-1 opacity-70">${msg.time}</span>
+          </div>
+        </div>
+      `;
+    }
+
+    function initChatDOM() {
+      const input = document.getElementById('chatKeyboardInput');
+      const btn = document.getElementById('sendChatButton');
+      const scrollBox = document.getElementById('chatScrollArea');
+      const order = store.orders.find(o => o.id === routeParams.orderId) || store.orders[0];
+
+      if (!input || !btn) return;
+      if (scrollBox) scrollBox.scrollTop = scrollBox.scrollHeight;
+
+      const performSend = () => {
+        const text = input.value.trim();
+        if (!text) return;
+
+        const isTalent = store.activeRole === 'TALENT';
+        if (!store.chats[order.id]) store.chats[order.id] = [];
+
+        const newMsg = {
+          sender: isTalent ? 'talent' : 'penyewa',
+          text: text,
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        };
+        store.chats[order.id].push(newMsg);
+        saveStore();
+
+        if (scrollBox) {
+          scrollBox.insertAdjacentHTML('beforeend', renderChatBubble(newMsg, isTalent));
+          scrollBox.scrollTop = scrollBox.scrollHeight;
+        }
+
+        input.value = '';
+        input.focus();
+
+        setTimeout(() => {
+          const replySender = isTalent ? 'penyewa' : 'talent';
+          const replies = isTalent
+            ? ["Baik Ustadz, terima kasih konfirmasinya. Sound system dan panggung sudah siap.", "Siap Ustadz, jamaah sudah siap menyambut rawuh panjenengan."]
+            : ["Wa'alaikumsalam warahmatullah. Insya Allah kami siap hadir tepat waktu.", "Alhamdulillah, materi aqidah dan akhlak insya Allah kami sampaikan dengan hikmah."];
+          const autoText = replies[Math.floor(Math.random() * replies.length)];
+
+          const autoMsg = {
+            sender: replySender,
+            text: autoText,
+            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          };
+          store.chats[order.id].push(autoMsg);
+          saveStore();
+
+          if (scrollBox && currentRoute === 'chat') {
+            scrollBox.insertAdjacentHTML('beforeend', renderChatBubble(autoMsg, isTalent));
+            scrollBox.scrollTop = scrollBox.scrollHeight;
+          }
+        }, 1200);
+      };
+
+      btn.onclick = performSend;
+
+      input.onkeydown = (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          performSend();
+        }
+      };
+
+      setTimeout(() => input.focus(), 80);
+    }
+
+    function promptRundownAttachment(orderId) {
+      if (!store.rundowns.length) return alert("Belum ada rundown yang dibuat.");
+      const rd = store.rundowns[0];
+      const isTalent = store.activeRole === 'TALENT';
+
+      if (!store.chats[orderId]) store.chats[orderId] = [];
+      const attachMsg = {
+        sender: isTalent ? 'talent' : 'penyewa',
+        text: `📎 [RUNDOWN TERSEMAT]: "${rd.namaAcara}" (${rd.items.length} Sesi Timeline)`,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      };
+      store.chats[orderId].push(attachMsg);
+      saveStore();
+
+      const scrollBox = document.getElementById('chatScrollArea');
+      if (scrollBox) {
+        scrollBox.insertAdjacentHTML('beforeend', renderChatBubble(attachMsg, isTalent));
+        scrollBox.scrollTop = scrollBox.scrollHeight;
+      }
+      showToast("Rundown acara disematkan ke obrolan!");
+    }
+
+    function previewPinnedRundownModal() {
+      const rd = store.rundowns[0];
+      const html = `
+        <div class="space-y-3">
+          <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+            <h4 class="text-sm font-bold text-slate-900">${rd ? rd.namaAcara : 'Susunan Acara'}</h4>
+            <button onclick="closeModal()" class="text-slate-400 font-bold">✕</button>
+          </div>
+          <p class="text-xs text-slate-500">${rd ? fmtTanggalIndo(rd.tanggalAcara) : ''}</p>
+          <div class="space-y-2">
+            ${rd && rd.items.map(it => `
+              <div class="p-2.5 bg-slate-50 rounded-xl text-xs flex items-center justify-between border border-slate-200">
+                <span class="font-bold text-slate-800 font-mono">${it.jamMulai} - ${it.jamSelesai}</span>
+                <span class="text-slate-700">${it.keterangan}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+      openModal(html);
+    }
+
+    function viewTalentCalendar() {
+      const bookedDates = store.orders.filter(o => o.status !== 'REJECTED').map(o => o.tanggalAcara);
+      const days = [];
+      for (let i = 1; i <= 30; i++) {
+        const dStr = `2026-09-${String(i).padStart(2, '0')}`;
+        const isBooked = bookedDates.includes(dStr);
+        const isBlocked = store.blockedDates.includes(dStr);
+        days.push({ day: i, dateStr: dStr, isBooked, isBlocked });
+      }
+
+      return `
+        <div class="screen-in pb-8 p-4 space-y-4">
+          <div class="p-4 bg-gradient-to-r from-emerald-950 to-emerald-800 text-white rounded-3xl shadow-md flex items-center justify-between">
+            <div>
+              <span class="text-xs text-emerald-200 uppercase font-bold tracking-wider">Saldo Infaq Syiar</span>
+              <h3 class="text-xl font-black mt-0.5">${fmtRupiah(store.talentProfile.walletBalance)}</h3>
+            </div>
+            <button onclick="openWithdrawModal()" class="px-3 py-1.5 bg-emerald-700 hover:bg-emerald-600 rounded-xl text-xs font-bold shadow-xs">
+              Tarik Saldo
+            </button>
+          </div>
+
+          <div class="bg-white border border-slate-200 rounded-3xl p-4 shadow-2xs space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-black text-rose-600">2026</span>
+              <span class="text-xs font-bold text-slate-800 uppercase tracking-wider">SEPTEMBER</span>
+              <span class="text-xs text-slate-400">Jadwal Dakwah</span>
+            </div>
+
+            <div class="grid grid-cols-7 gap-1 text-center text-xs font-bold text-slate-400">
+              <span>MIN</span><span>SEN</span><span>SEL</span><span>RAB</span><span>KAM</span><span>JUM</span><span>SAB</span>
+            </div>
+
+            <div class="grid grid-cols-7 gap-1 text-center text-xs">
+              <span class="py-2 text-slate-300">30</span>
+              ${days.map(d => `
+                <button onclick="handleDateBlockClick('${d.dateStr}')" class="py-2 rounded-xl font-bold transition ${
+                  d.isBooked ? 'bg-emerald-600 text-white shadow-2xs' :
+                  d.isBlocked ? 'bg-rose-100 text-rose-700 border border-rose-300' :
+                  'hover:bg-slate-100 text-slate-700'
+                }">
+                  ${d.day}
+                </button>
+              `).join('')}
+            </div>
+
+            <div class="flex items-center justify-around pt-3 border-t border-slate-100 text-xs font-semibold">
+              <div class="flex items-center space-x-1.5">
+                <span class="w-3 h-3 rounded-full bg-emerald-600"></span>
+                <span>Terbooking</span>
+              </div>
+              <div class="flex items-center space-x-1.5">
+                <span class="w-3 h-3 rounded-full bg-rose-200 border border-rose-400"></span>
+                <span>Blokir Mandiri</span>
+              </div>
+              <div class="flex items-center space-x-1.5">
+                <span class="w-3 h-3 rounded-full bg-slate-200"></span>
+                <span>Tersedia</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function handleDateBlockClick(dStr) {
+      if (store.blockedDates.includes(dStr)) {
+        store.blockedDates = store.blockedDates.filter(d => d !== dStr);
+        showToast(`Tanggal ${fmtTanggalIndo(dStr)} dibuka kembali.`);
+      } else {
+        store.blockedDates.push(dStr);
+        showToast(`Tanggal ${fmtTanggalIndo(dStr)} diblokir mandiri.`);
+      }
+      saveStore();
+      renderCurrentView();
+    }
+
+    function openWithdrawModal() {
+      const p = store.talentProfile;
+      const html = `
+        <div class="space-y-4 text-center">
+          <h4 class="text-sm font-bold text-slate-900">Pencairan Dana Infaq</h4>
+          <div class="p-3 bg-emerald-50 rounded-2xl border border-emerald-300">
+            <span class="text-xs text-slate-500">Saldo Tersedia:</span>
+            <div class="text-lg font-black text-emerald-950 mt-1">${fmtRupiah(p.walletBalance)}</div>
+            <p class="text-xs text-slate-600 mt-2">Rekening Tujuan: <b>${p.bankName}</b> (${p.rekening}) a/n ${p.namaPemilik}</p>
+          </div>
+          <button onclick="executeWithdrawal()" class="w-full py-3 bg-emerald-800 text-white rounded-xl text-xs font-bold shadow-md">
+            Konfirmasi Tarik Semua ke Rekening
+          </button>
+        </div>
+      `;
+      openModal(html);
+    }
+
+    function executeWithdrawal() {
+      store.talentProfile.walletBalance = 0;
+      saveStore();
+      closeModal();
+      showToast("Pencairan dana berhasil ditransfer ke rekening bank!");
+      renderCurrentView();
+    }
+
+    function viewTalentInbox() {
+      const incoming = store.orders.filter(o => o.status === 'PAID');
+
+      return `
+        <div class="screen-in pb-8 p-4 space-y-4">
+          <h3 class="text-sm font-bold text-slate-800 flex items-center space-x-2">
+            <span class="text-base">🔔</span>
+            <span>Permintaan Pesanan Masuk (${incoming.length})</span>
+          </h3>
+
+          ${incoming.length ? `
+            <div class="space-y-3">
+              ${incoming.map(o => `
+                <div class="bg-emerald-50 border-2 border-emerald-300 rounded-3xl p-4 shadow-2xs space-y-3">
+                  <div class="flex items-start space-x-3">
+                    <div class="w-12 h-12 rounded-full bg-slate-300 flex items-center justify-center text-slate-600 font-bold">
+                      👤
+                    </div>
+                    <div class="flex-1">
+                      <h4 class="text-xs font-bold text-slate-900">${o.penyewaNama}</h4>
+                      <p class="text-xs font-semibold text-emerald-950 mt-0.5">${o.jenisAcara}</p>
+                      <p class="text-xs text-slate-500">${fmtTanggalIndo(o.tanggalAcara)} • ${o.jamMulai}</p>
+                      <p class="text-xs text-slate-400">${o.lokasi}</p>
+                      <span class="text-sm font-black text-emerald-950 mt-1 block">${fmtRupiah(o.harga)}</span>
+                    </div>
+                  </div>
+
+                  <div class="grid grid-cols-2 gap-2 pt-2 border-t border-emerald-200">
+                    <button onclick="acceptOrderAction('${o.id}')" class="py-2.5 bg-emerald-800 hover:bg-emerald-900 text-white font-bold rounded-xl text-xs shadow-md">
+                      Terima Pesanan
+                    </button>
+                    <button onclick="rejectOrderAction('${o.id}')" class="py-2.5 bg-white border border-rose-300 text-rose-700 font-bold rounded-xl text-xs">
+                      Tolak
+                    </button>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          ` : `
+            <div class="p-8 bg-white border border-slate-200 rounded-2xl text-center text-xs text-slate-400">
+              Tidak ada pesanan masuk yang menunggu persetujuan.
+            </div>
+          `}
+        </div>
+      `;
+    }
+
+    function acceptOrderAction(orderId) {
+      const order = store.orders.find(o => o.id === orderId);
+      if (order) order.status = 'ACCEPTED';
+      saveStore();
+      showToast("Pesanan diterima! Jadwal resmi dikunci di kalender.");
+      renderCurrentView();
+    }
+
+    function rejectOrderAction(orderId) {
+      if (confirm("Tolak pesanan ini?")) {
+        const order = store.orders.find(o => o.id === orderId);
+        if (order) order.status = 'REJECTED';
+        saveStore();
+        showToast("Pesanan telah ditolak.");
+        renderCurrentView();
+      }
+    }
+
+    function viewTalentAcara() {
+      const accepted = store.orders.filter(o => ['ACCEPTED', 'DONE'].includes(o.status));
+
+      return `
+        <div class="screen-in pb-8 p-4 space-y-3">
+          <h3 class="text-sm font-bold text-slate-800 flex items-center space-x-2">
+            <span class="text-base">📋</span>
+            <span>Jadwal Dakwah Terkonfirmasi</span>
+          </h3>
+
+          ${accepted.length ? `
+            <div class="space-y-3">
+              ${accepted.map(o => `
+                <div class="bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs space-y-2">
+                  <div class="flex items-start justify-between">
+                    <div>
+                      <h4 class="text-xs font-bold text-slate-900">${o.jenisAcara}</h4>
+                      <p class="text-xs text-slate-500">${fmtTanggalIndo(o.tanggalAcara)} • ${o.jamMulai}</p>
+                      <p class="text-xs text-slate-400">${o.lokasi}</p>
+                    </div>
+                    <span class="text-xs font-bold px-2 py-0.5 rounded-full ${o.status === 'DONE' ? 'bg-emerald-100 text-emerald-950' : 'bg-blue-100 text-blue-950'}">
+                      ${o.status === 'DONE' ? 'Selesai' : 'Siap Berangkat'}
+                    </span>
+                  </div>
+
+                  <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100">
+                    <button onclick="navigate('chat', { orderId: '${o.id}' })" class="py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-bold">
+                      Room Chat
+                    </button>
+                    ${o.status === 'ACCEPTED' ? `
+                      <button onclick="navigate('talent-presence', { orderId: '${o.id}' })" class="py-2 bg-emerald-800 hover:bg-emerald-900 text-white rounded-xl text-xs font-bold shadow-2xs">
+                        Kehadiran (Foto)
+                      </button>
+                    ` : `
+                      <span class="py-2 bg-emerald-50 text-emerald-950 rounded-xl text-xs font-bold text-center">
+                        ✓ Hadir Tuntas
+                      </span>
+                    `}
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          ` : `
+            <div class="p-8 bg-white border border-slate-200 rounded-2xl text-center text-xs text-slate-400">
+              Belum ada jadwal acara terkonfirmasi.
+            </div>
+          `}
+        </div>
+      `;
+    }
+
+    function viewTalentPresence(orderId) {
+      const order = store.orders.find(o => o.id === orderId) || store.orders[0];
+
+      return `
+        <div class="screen-in pb-8 p-4 flex flex-col justify-between min-h-full">
+          <div>
+            <div class="flex items-center space-x-2 border-b border-slate-100 pb-2 mb-3">
+              <button onclick="navigate('talent-acara')" class="text-slate-600 font-bold text-xs">← Kembali</button>
+              <h3 class="text-sm font-bold text-slate-900">Konfirmasi Kehadiran Syiar</h3>
+            </div>
+
+            <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-2xl mb-4 text-xs">
+              <span class="font-bold text-emerald-950">${order.jenisAcara}</span>
+              <p class="text-slate-600">${fmtTanggalIndo(order.tanggalAcara)} • ${order.lokasi}</p>
+              <p class="text-emerald-800 font-bold mt-1">✓ GPS Terverifikasi: Koordinat Valid (-7.2575, 112.7521)</p>
+            </div>
+
+            <div class="w-full h-64 bg-slate-100 border-2 border-dashed border-emerald-400 rounded-3xl flex flex-col items-center justify-center p-4 relative overflow-hidden text-center">
+              <div id="selfieCameraPlaceholder">
+                <span class="text-4xl block mb-1">📸</span>
+                <span class="text-xs font-bold text-slate-700">Foto Selfie di Mimbar Acara</span>
+                <p class="text-xs text-slate-400 mt-1 max-w-[220px]">Posisikan wajah dan panggung acara secara jelas sebagai bukti selesai tugas syiar.</p>
+                <label class="mt-3 inline-block px-4 py-2 bg-slate-900 text-white text-xs font-bold rounded-xl shadow-md cursor-pointer">
+                  <span>Pilih / Ambil Foto</span>
+                  <input type="file" accept="image/*" capture="user" onchange="previewSelfieUpload(event)" class="hidden">
+                </label>
+              </div>
+              <img id="selfiePreviewImage" class="hidden absolute inset-0 w-full h-full object-cover">
+            </div>
+          </div>
+
+          <div class="mt-4">
+            <button onclick="submitPresenceDone('${order.id}')" class="w-full py-3.5 bg-emerald-800 hover:bg-emerald-900 text-white font-bold rounded-2xl text-xs shadow-md active:scale-95 transition">
+              Selesai Acara & Cairkan Infaq
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    function previewSelfieUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = document.getElementById('selfiePreviewImage');
+        const box = document.getElementById('selfieCameraPlaceholder');
+        img.src = e.target.result;
+        img.classList.remove('hidden');
+        box.classList.add('hidden');
+        showToast("Foto panggung berhasil dipilih!");
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function submitPresenceDone(orderId) {
+      const order = store.orders.find(o => o.id === orderId);
+      if (order) {
+        order.status = 'DONE';
+        order.presencePhoto = 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=600&auto=format&fit=crop&q=80';
+        store.talentProfile.walletBalance += order.harga;
+      }
+      saveStore();
+      showToast("Alhamdulillah! Kehadiran sah, dana infaq dicairkan ke saldo.");
+      navigate('talent-calendar');
+    }
+
+    function viewTalentWizard() {
+      return `
+        <div class="screen-in pb-8 p-5 bg-white min-h-full flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+              <span class="text-sm font-black text-emerald-800">${wizardStep}/4</span>
+              <span class="text-xs uppercase font-bold text-slate-400 tracking-wider">Verifikasi Data Talent</span>
+              <button onclick="navigate('talent-calendar')" class="text-xs text-slate-400 hover:text-slate-700">Tutup</button>
+            </div>
+
+            ${wizardStep === 1 ? `
+              <div class="text-center space-y-4">
+                <h3 class="text-base font-bold text-slate-900">Unggah Foto Profile</h3>
+                <div class="w-32 h-32 rounded-full bg-slate-100 border-4 border-emerald-500 mx-auto overflow-hidden shadow-inner flex items-center justify-center relative">
+                  <img id="wizardAvatarPreview" src="${wizardTempData.fotoProfil || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=300&auto=format&fit=crop&q=80'}" class="w-full h-full object-cover">
+                </div>
+                <label class="inline-block px-5 py-2.5 bg-emerald-800 text-white font-bold rounded-xl text-xs cursor-pointer shadow-sm">
+                  <span>Pilih dari Perangkat</span>
+                  <input type="file" accept="image/*" onchange="handleWizardAvatar(event)" class="hidden">
+                </label>
+              </div>
+            ` : ''}
+
+            ${wizardStep === 2 ? `
+              <div class="space-y-3">
+                <h3 class="text-base font-bold text-slate-900 text-center">Foto Identitas KTP</h3>
+                <p class="text-xs text-slate-500 text-center">Pastikan foto KTP asli dan bebas dari pantulan cahaya lampu.</p>
+
+                <div class="p-3 bg-emerald-50 border border-emerald-300 rounded-2xl flex flex-col items-center">
+                  <div class="w-44 h-28 bg-white border border-emerald-500 rounded-xl p-2.5 flex flex-col justify-between shadow-2xs">
+                    <span class="text-[10px] font-bold text-emerald-800">REPUBLIK INDONESIA</span>
+                    <span class="text-xs font-mono font-bold text-slate-800">3578 •••• •••• 0004</span>
+                    <span class="text-[10px] font-bold text-emerald-700">✓ KTP Terbaca Jelas</span>
+                  </div>
+                </div>
+
+                <label class="w-full py-3 bg-emerald-800 text-white font-bold rounded-xl text-xs flex items-center justify-center space-x-2 cursor-pointer shadow-md">
+                  <span>📸 Scan Foto KTP (Enkripsi AES-256)</span>
+                  <input type="file" accept="image/*" onchange="handleWizardKTP(event)" class="hidden">
+                </label>
+              </div>
+            ` : ''}
+
+            ${wizardStep === 3 ? `
+              <div class="space-y-3 text-left">
+                <h3 class="text-base font-bold text-slate-900 text-center">Bidang Keahlian & Tarif</h3>
+                <div>
+                  <label class="text-xs font-bold text-slate-700">Keahlian Utama</label>
+                  <div class="grid grid-cols-2 gap-2 mt-1.5">
+                    ${['Ustadz / Da\'i', 'MC Pengajian', 'Qari / Qariah', 'Tim Hadrah'].map(cat => `
+                      <label class="flex items-center space-x-2 text-xs p-2.5 bg-slate-50 border border-slate-200 rounded-xl cursor-pointer">
+                        <input type="checkbox" checked class="rounded text-emerald-800">
+                        <span class="font-semibold text-slate-800">${cat}</span>
+                      </label>
+                    `).join('')}
+                  </div>
+                </div>
+                <div>
+                  <label class="text-xs font-bold text-slate-700">Tarif Infaq per Acara (Rp)</label>
+                  <input id="wizTarifInput" type="number" value="${wizardTempData.tarif}" class="w-full mt-1 px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold">
+                </div>
+              </div>
+            ` : ''}
+
+            ${wizardStep === 4 ? `
+              <div class="space-y-3 text-left">
+                <h3 class="text-base font-bold text-slate-900 text-center">Rekening Bank Pencairan</h3>
+                <div>
+                  <label class="text-xs font-bold text-slate-700">Nama Pemilik Rekening (Sesuai KTP)</label>
+                  <input id="wizNamaInput" type="text" value="${wizardTempData.namaPemilik}" class="w-full mt-1 px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold">
+                </div>
+                <div>
+                  <label class="text-xs font-bold text-slate-700">Nama Bank</label>
+                  <select id="wizBankSelect" class="w-full mt-1 px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold">
+                    ${Object.keys(BANK_LIST).map(b => `<option ${b.includes('BSI') ? 'selected' : ''}>${b}</option>`).join('')}
+                  </select>
+                </div>
+                <div>
+                  <label class="text-xs font-bold text-slate-700">Nomor Rekening</label>
+                  <input id="wizRekInput" type="text" value="${wizardTempData.noRek}" class="w-full mt-1 px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-mono font-bold">
+                </div>
+              </div>
+            ` : ''}
+          </div>
+
+          <div class="flex items-center justify-between pt-4 border-t border-slate-100">
+            <button onclick="if(wizardStep > 1) { wizardStep--; renderCurrentView(); }" class="text-xs font-bold text-slate-500 hover:text-slate-800 ${wizardStep === 1 ? 'invisible' : ''}">
+              ← Sebelumnya
+            </button>
+            <button onclick="handleWizardNext()" class="w-12 h-12 bg-emerald-800 hover:bg-emerald-900 text-white rounded-full flex items-center justify-center shadow-lg active:scale-95 transition">
+              <span class="text-lg">→</span>
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    function handleWizardAvatar(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        wizardTempData.fotoProfil = e.target.result;
+        document.getElementById('wizardAvatarPreview').src = e.target.result;
+        showToast("Foto profil tersimpan.");
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function handleWizardKTP(event) {
+      showToast("Foto KTP berhasil dipindai dengan enkripsi AES-256!");
+    }
+
+    function handleWizardNext() {
+      if (wizardStep < 4) {
+        wizardStep++;
+        renderCurrentView();
+      } else {
+        const no = document.getElementById('wizRekInput').value.trim();
+        if (!/^\d{8,16}$/.test(no)) {
+          alert("Nomor rekening harus terdiri dari 8 hingga 16 digit angka.");
+          return;
+        }
+
+        store.talentProfile.isVerified = true;
+        saveStore();
+        showToast("Verifikasi Talent berhasil diaudit!", "🎉");
+        wizardStep = 1;
+        navigate('talent-calendar');
+      }
+    }
+
+    function viewTalentProfile() {
+      const p = store.talentProfile;
+      return `
+        <div class="screen-in pb-8 p-4 space-y-4">
+          <div class="bg-white border border-slate-200 rounded-3xl p-5 text-center flex flex-col items-center shadow-2xs">
+            <div class="w-20 h-20 rounded-full overflow-hidden border-2 border-emerald-600 mb-2 shadow-inner">
+              <img src="${p.foto}" class="w-full h-full object-cover">
+            </div>
+            <h4 class="text-base font-black text-slate-900">${p.nama}</h4>
+            <p class="text-xs text-slate-500">${p.email}</p>
+            <span class="mt-2 text-xs font-bold px-3 py-0.5 rounded-full bg-emerald-100 text-emerald-950 border border-emerald-300">
+              ✓ Terverifikasi KTP & Rekening
+            </span>
+          </div>
+
+          <div class="bg-white border border-slate-200 rounded-2xl p-4 space-y-2.5 text-xs shadow-2xs">
+            <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+              <span class="text-slate-500">Bank Terdaftar:</span>
+              <span class="font-bold text-slate-800">${p.bankName}</span>
+            </div>
+            <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+              <span class="text-slate-500">Nomor Rekening:</span>
+              <span class="font-mono font-bold text-slate-800">${p.rekening.slice(0, 3)}••••${p.rekening.slice(-3)}</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-slate-500">Saldo Dompet:</span>
+              <span class="font-black text-emerald-950">${fmtRupiah(p.walletBalance)}</span>
+            </div>
+          </div>
+
+          <button onclick="navigate('talent-wizard')" class="w-full py-3 bg-slate-900 text-white rounded-xl text-xs font-bold shadow-md">
+            Ubah Data Verifikasi Talent
+          </button>
+        </div>
+      `;
+    }
+
+    let currentRatingStars = 5;
+
+    function openReviewModal(orderId) {
+      const order = store.orders.find(o => o.id === orderId);
+      if (!order) return;
+
+      const html = `
+        <div class="space-y-4 text-center">
+          <div class="w-12 h-12 rounded-full bg-amber-100 text-amber-700 mx-auto flex items-center justify-center text-xl">
+            ⭐
+          </div>
+          <h4 class="text-sm font-bold text-slate-900">Beri Penilaian Dakwah</h4>
+          <p class="text-xs text-slate-500">${order.talentNama} • ${order.jenisAcara}</p>
+
+          <div class="flex items-center justify-center space-x-2 text-3xl text-amber-400 cursor-pointer select-none">
+            <span onclick="setRatingStars(1)" id="star1">★</span>
+            <span onclick="setRatingStars(2)" id="star2">★</span>
+            <span onclick="setRatingStars(3)" id="star3">★</span>
+            <span onclick="setRatingStars(4)" id="star4">★</span>
+            <span onclick="setRatingStars(5)" id="star5">★</span>
+          </div>
+
+          <textarea id="reviewCommentInput" rows="3" placeholder="Tuliskan ulasan mengenai kesesuaian materi tausiyah dan ketepatan waktu..." class="w-full p-3 bg-slate-50 border border-slate-300 rounded-xl text-xs focus:outline-none"></textarea>
+
+          <button onclick="commitReview('${order.id}')" class="w-full py-3 bg-emerald-800 text-white font-bold rounded-xl text-xs shadow-md">
+            Kirim Penilaian Syiar
+          </button>
+        </div>
+      `;
+      openModal(html);
+    }
+
+    function setRatingStars(n) {
+      currentRatingStars = n;
+      for (let i = 1; i <= 5; i++) {
+        const star = document.getElementById('star' + i);
+        if (star) star.style.color = i <= n ? '#f59e0b' : '#cbd5e1';
+      }
+    }
+
+    function commitReview(orderId) {
+      const text = document.getElementById('reviewCommentInput').value.trim();
+      const order = store.orders.find(o => o.id === orderId);
+      if (order) {
+        order.rating = currentRatingStars;
+        order.reviewText = text || 'Alhamdulillah sangat berkah.';
+      }
+      saveStore();
+      closeModal();
+      showToast("Terima kasih atas penilaian Anda!");
+      renderCurrentView();
+    }
+
+    setInterval(() => {
+      const d = new Date();
+      const clock = document.getElementById('liveClock');
+      if (clock) clock.innerText = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }, 1000);
+
+    navigate('home');
+  </script>
+</body>
+</html>
